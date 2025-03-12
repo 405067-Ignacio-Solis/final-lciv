@@ -1,0 +1,85 @@
+
+services:
+
+  # API Gateway
+  api-gateway:
+  # DONE
+  # Completar microservicio
+    image: api-gateway.jar
+    build: ./gateway
+    ports:
+      - "8080:8080"
+    networks:
+      - library-network
+    container_name: api-gateway
+
+  # puerto 8080
+
+  # Clientes Service
+  clientes-service:
+    # DONE
+    # Completar microservicio
+    image: clientes-service.jar
+    build: ./clientes
+    container_name: clientes-service
+    ports:
+      - "8081:8081"
+    networks:
+      - library-network
+    depends_on:
+      - mysql-db
+    # puerto 8081
+
+  # Biblioteca Service
+  biblioteca-service:
+  # DONE
+  # Completar microservicio
+    image: biblioteca-service.jar
+    build: ./biblioteca
+    container_name: biblioteca-service
+    ports:
+      - "8082:8082"
+    networks:
+    - library-network
+    depends_on:
+      - mysql-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/biblioteca_db
+      - SPRING_DATASOURCE_USERNAME=tup
+      - SPRING_DATASOURCE_PASSWORD=tup
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+
+  # puerto 8082
+
+
+  # Servicio de base de datos MySQL
+  mysql-db:
+    image: mysql:8.0
+    container_name: biblioteca_db-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: biblioteca_db
+      MYSQL_USER: tup
+      MYSQL_PASSWORD: tup
+    ports:
+      - "3307:3306"
+    expose:
+      - "3307"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - library-network
+
+
+# Volumen persistente para la base de datos
+volumes:
+  mysql-data:
+
+networks:
+  library-network:
+    driver: bridge
